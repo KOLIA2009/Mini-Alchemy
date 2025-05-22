@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Little Alchemy with Extended Combinations</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+    h1 { text-align: center; }
+    #elements {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .element {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: grab;
+      border: 1px solid #888;
+      border-radius: 5px;
+      background: white;
+      user-select: none;
+      text-align: center;
+      min-width: 80px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: background 0.3s;
+    }
+    .element:hover {
+      background: #d0e7ff;
+    }
+    .element.dragging {
+      opacity: 0.5;
+      cursor: grabbing;
+    }
+    .element.selected {
+      background: #ffd966;
+      border-color: #cc9a00;
+    }
+    #message {
+      text-align: center;
+      font-weight: bold;
+      color: #2a7f2a;
+      min-height: 24px;
+      margin-bottom: 20px;
+    }
+    #buttons {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      gap: 10px;
+      z-index: 1000;
+    }
+    button {
+      padding: 10px 15px;
+      background: #2a7f2a;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      user-select: none;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #236622;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="title">Little Alchemy</h1>
+  
+  <div id="message"></div>
+  <div id="elements"></div>
+
+  <div id="buttons">
+    <button id="toggleModeBtn">Phone Version</button>
+    <button id="toggleLangBtn">English Edition</button>
+  </div>
+
+  <script>
+    // Данные для двух языков
+    const data = {
+      ru: {
+        title: 'Little Alchemy',
+        elements: ['Вода', 'Огонь', 'Земля', 'Воздух', 'Солнце', 'Металл', 'Хлеб'],
+        combinations: {
+          'Вода+Огонь': 'Пар',
+          'Вода+Земля': 'Грязь',
+          'Вода+Воздух': 'Туман',
+          'Вода+Солнце': 'Роса',
+          'Вода+Металл': 'Алюминний',
+          'Вода+Хлеб': 'Тесто',
+          'Огонь+Земля': 'Лава',
+          'Огонь+Воздух': 'Давление',
+          'Огонь+Солнце': 'Свет',
+          'Огонь+Металл': 'Сплав',
+          'Огонь+Хлеб': 'Пепел',
+          'Земля+Воздух': 'Пыль',
+          'Земля+Солнце': 'Земли',
+          'Земля+Хлеб': 'Пшеница',
+          'Лава+Давление': 'Сжатие',
+          'Сжатие+Свет': 'Электричество',
+          'Воздух+Давление': 'Облако',
+          'Облако+Вода': 'Дождь',
+          'Дождь+Вода': 'Лужа',
+          'Лужа+Грязь': 'Болото',
+          'Дождь+Свет': 'Радуга',
+          'Давление+Камень': 'Гора',
+          'Гора+Вода': 'Речка',
+          'Речка+Вода': 'Море',
+          'Море+Сжатие': 'Озеро',
+          'Море+Вода': 'Океан',
+          'Давление+Свет': 'Атмосфера',
+          'Атмосфера+Земли': 'Планета',
+          'Грязь+Давление': 'Почва',
+          'Почва+Дождь': 'Растение',
+          'Растение+Вода': 'Водоросли',
+          'Растение+Дождь': 'Трава',
+          'Трава+Свет': 'Сад',
+          'Давление+Огонь': 'Энергия',
+          'Энергия+Давление': 'Материя',
+          'Материя+Планета': 'Космос',
+          'Энергия+Болото': 'Жизнь',
+          'Жизнь+Грязь': 'Человек',
+          'Человек+Сад': 'Садовод',
+          'Человек+Почва': 'Фермер',
+          'Фермер+Почва': 'Ферма',
+          'Ферма+Жизнь': 'Животное',
+          'Животное+Воздух': 'Коза',
+          'Коза+Человек': 'Кадыров',
+          'Воздух+Энергия': 'Ветер',
+          'Энергия+Человек': 'Сила',
+          'Сила+Ветер': 'Буря',
+          'Буря+Пыль': 'Пыльная Буря',
+          'Вода+Пар': 'Заморозка',
+          'Заморозка+Вода': 'Лёд',
+          'Лёд+Земля': 'Снег',
+          'Снег+Гора': 'Лавина',
+          'Гора+Лавина': 'Катострофа',
+          'Катострофа+Вода': 'Цунами',
+          'Катострофа+Лава': 'Извержение',
+          'Катострофа+Земля': 'Землятрясение',
+          'Давление+Катострофа': 'Взрыв',
+          'Взрыв+Давление': 'Уран',
+          'Уран+Сжатие': 'Молекула',
+          'Молекула+Сжатие': 'Атом',
+          'Атом+Сжатие': 'Кварк',
+          'Кварк+Сжатие': '???',
+          'Атом+Давление': 'Скорость',
+          'Молекула+Давление': 'Время',
+          'Почва+Огонь': 'Песок',
+          'Песок+Огонь': 'Стекло',
+          'Стекло+Время': 'Часы',
+          'Часы+Взрыв': 'Машина Времени',
+          'Животное+Атом': 'Тихоходка',
+          'Атом+Молекула': 'Высечь',
+          'Тихоходка+Высечь': 'Безсмертие',
+          'Сила+Высечь': 'Увеличение',
+          'Время+Солнце': 'Сутки',
+          'Сутки+Время': 'Цыкл',
+          'Цыкл+Время': 'День',
+          'День+Время': 'Ночь',
+          'Солнце+Цыкл': 'Закат',
+          'Закат+Время': 'Восход',
+          'Земли+Вода': 'Гейзер',
+          'Ночь+Планета': 'Луна',
+          'Луна+Высечь': 'Спутник',
+          'Безсмертие+Высечь': 'Шутка',
+          'Шутка+Луна': 'Сыр',
+          'Сыр+Животное': 'Крыса',
+          'Безсмертие+Машина Времени': 'Несуществование',
+
+        },
+        messages: {
+          dragStart: 'Перетащите элемент "{0}" на другой',
+          selectSecond: 'Выберите второй элемент',
+          selected: 'Ты выбрал: {0} + {1}',
+          newElement: 'Получился новый элемент: {0}!',
+          failCombine: 'Невозможно объединить "{0}" и "{1}".',
+          phoneVersion: 'Версия для телефонов',
+          pcVersion: 'Версия для ПК (drag & drop)',
+          englishEdition: 'English Edition',
+          russianEdition: 'Русская версия',
+          title: 'Little Alchemy'
+        }
+      },
+      en: {
+        title: 'Little Alchemy',
+        elements: ['Water', 'Fire', 'Earth', 'Air', 'Sun', 'Metal', 'Bread'],
+        combinations: {
+          'Water+Fire': 'Steam',
+          'Water+Earth': 'Mud',
+          'Water+Air': 'Fog',
+          'Water+Sun': 'Dew',
+          'Water+Metal': 'Aluminum',
+          'Water+Bread': 'Dough',
+          'Fire+Earth': 'Lava',
+          'Fire+Air': 'Pressure',
+          'Fire+Sun': 'Light',
+          'Fire+Metal': 'Alloy',
+          'Fire+Bread': 'Ash',
+          'Earth+Air': 'Dust',
+          'Earth+Sun': 'Lands',
+          'Earth+Bread': 'Wheat',
+          'Lava+Pressure': 'Compression',
+          'Compression+Light': 'Electricity',
+          'Air+Pressure': 'Cloud',
+          'Cloud+Water': 'Rain',
+          'Rain+Water': 'Puddle',
+          'Puddle+Mud': 'Swamp',
+          'Rain+Light': 'Rainbow',
+          'Pressure+Stone': 'Mountain',
+          'Mountain+Water': 'Stream',
+          'Stream+Water': 'Sea',
+          'Sea+Compression': 'Lake',
+          'Sea+Water': 'Ocean',
+          'Pressure+Light': 'Atmosphere',
+          'Atmosphere+Lands': 'Planet',
+          'Mud+Pressure': 'Soil',
+          'Soil+Rain': 'Plant',
+          'Plant+Water': 'Algae',
+          'Plant+Rain': 'Grass',
+          'Grass+Light': 'Garden',
+          'Pressure+Fire': 'Energy',
+          'Energy+Pressure': 'Matter',
+          'Matter+Planet': 'Space',
+          'Energy+Swamp': 'Life',
+          'Life+Mud': 'Human',
+          'Human+Garden': 'Gardener',
+          'Human+Soil': 'Farmer',
+          'Farmer+Soil': 'Farm',
+          'Farm+Life': 'Animal',
+          'Animal+Air': 'Goat',
+          'Goat+Human': 'Kadyrov',
+          'Air+Energy': 'Wind',
+          'Energy+Human': 'Strength',
+          'Strength+Wind': 'Storm',
+          'Storm+Dust': 'Dust Storm',
+          'Water+Steam': 'Freezing',
+          'Freezing+Water': 'Ice',
+          'Ice+Earth': 'Snow',
+          'Snow+Mountain': 'Avalanche',
+          'Mountain+Avalanche': 'Catastrophe',
+          'Catastrophe+Water': 'Tsunami',
+          'Catastrophe+Lava': 'Eruption',
+          'Catastrophe+Earth': 'Earthquake',
+          'Pressure+Catastrophe': 'Explosion',
+          'Explosion+Pressure': 'Uranium',
+          'Uranium+Compression': 'Molecule',
+          'Molecule+Compression': 'Atom',
+          'Atom+Compression': 'Quark',
+          'Quark+Compression': '???',
+          'Atom+Pressure': 'Speed',
+          'Molecule+Pressure': 'Time',
+          'Soil+Fire': 'Sand',
+          'Sand+Fire': 'Glass',
+          'Glass+Time': 'Clock',
+          'Clock+Explosion': 'Time Machine',
+          'Animal+Atom': 'Tardigrade',
+          'Atom+Molecule': 'Spark',
+          'Tardigrade+Spark': 'Immortality',
+          'Strength+Spark': 'Growth',
+          'Time+Sun': 'Daytime',
+          'Daytime+Time': 'Cycle',
+          'Cycle+Time': 'Day',
+          'Day+Time': 'Night',
+          'Sun+Cycle': 'Sunset',
+          'Sunset+Time': 'Sunrise',
+          'Lands+Water': 'Geyser',
+          'Night+Planet': 'Moon',
+          'Moon+Spark': 'Satellite',
+          'Immortality+Spark': 'Joke',
+          'Joke+Moon': 'Cheese',
+          'Cheese+Animal': 'Rat',
+          'Immortality+Time Machine': 'Nonexistence',
+
+          
+        },
+        messages: {
+          dragStart: 'Drag the element "{0}" onto another',
+          selectSecond: 'Select the second element',
+          selected: 'You selected: {0} + {1}',
+          newElement: 'New element created: {0}!',
+          failCombine: 'Cannot combine "{0}" and "{1}".',
+          phoneVersion: 'Phone Version',
+          pcVersion: 'PC Version (drag & drop)',
+          englishEdition: 'English Edition',
+          russianEdition: 'Russian Edition',
+          title: 'Little Alchemy'
+        }
+      }
+    };
+
+    let currentLang = localStorage.getItem('lang') || 'ru';
+    let phoneMode = localStorage.getItem('phoneMode') === 'true';
+    let elements = [];
+    let combinations = {};
+    let messages = {};
+
+    const container = document.getElementById('elements');
+    const message = document.getElementById('message');
+    const toggleModeBtn = document.getElementById('toggleModeBtn');
+    const toggleLangBtn = document.getElementById('toggleLangBtn');
+    const titleEl = document.getElementById('title');
+
+    let draggedElement = null;
+    let selectedElements = [];
+
+    // Загрузка сохранённых элементов или начальных из языка
+    function loadElements() {
+      const saved = localStorage.getItem('elements');
+      if (saved) {
+        elements = JSON.parse(saved);
+      } else {
+        elements = [...data[currentLang].elements];
+      }
+      combinations = data[currentLang].combinations;
+      messages = data[currentLang].messages;
+      titleEl.textContent = messages.title;
+      toggleModeBtn.textContent = phoneMode ? messages.pcVersion : messages.phoneVersion;
+      toggleLangBtn.textContent = currentLang === 'ru' ? messages.englishEdition : messages.russianEdition;
+    }
+
+    function saveElements() {
+      localStorage.setItem('elements', JSON.stringify(elements));
+      localStorage.setItem('phoneMode', phoneMode);
+      localStorage.setItem('lang', currentLang);
+    }
+
+    function updateElements() {
+      container.innerHTML = '';
+      elements.forEach(el => {
+        const div = document.createElement('div');
+        div.className = 'element';
+        div.textContent = el;
+        div.dataset.name = el;
+
+        if (!phoneMode) {
+          // PC mode with drag and drop
+          div.setAttribute('draggable', 'true');
+
+          div.addEventListener('dragstart', (e) => {
+            draggedElement = e.target;
+            e.target.classList.add('dragging');
+            message.textContent = messages.dragStart.replace('{0}', e.target.textContent);
+          });
+
+          div.addEventListener('dragend', (e) => {
+            draggedElement = null;
+            e.target.classList.remove('dragging');
+            message.textContent = '';
+          });
+
+          div.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.target.style.background = '#a0c4ff';
+          });
+
+          div.addEventListener('dragleave', (e) => {
+            e.target.style.background = 'white';
+          });
+
+          div.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.target.style.background = 'white';
+
+            if (draggedElement && draggedElement !== e.target) {
+              combineElements(draggedElement.dataset.name, e.target.dataset.name);
+            }
+          });
+        } else {
+          // Phone mode by click
+          div.style.cursor = 'pointer';
+
+          div.addEventListener('click', () => {
+            if (selectedElements.length < 2 && !selectedElements.includes(el)) {
+              selectedElements.push(el);
+              div.classList.add('selected');
+              if (selectedElements.length === 2) {
+                message.textContent = messages.selected
+                  .replace('{0}', selectedElements[0])
+                  .replace('{1}', selectedElements[1]);
+                setTimeout(() => {
+                  combineElements(selectedElements[0], selectedElements[1]);
+                  clearSelection();
+                }, 1000);
+              } else {
+                message.textContent = messages.selectSecond;
+              }
+            }
+          });
+        }
+
+        container.appendChild(div);
+      });
+    }
+
+    function clearSelection() {
+      selectedElements = [];
+      const elems = document.querySelectorAll('.element.selected');
+      elems.forEach(e => e.classList.remove('selected'));
+    }
+
+    function combineElements(a, b) {
+      const key1 = a + '+' + b;
+      const key2 = b + '+' + a;
+
+      let result = combinations[key1] || combinations[key2];
+
+      if (result) {
+        if (!elements.includes(result)) {
+          elements.push(result);
+          saveElements();
+          updateElements();
+        }
+        message.textContent = messages.newElement.replace('{0}', result);
+      } else {
+        message.textContent = messages.failCombine.replace('{0}', a).replace('{1}', b);
+      }
+    }
+
+    toggleModeBtn.addEventListener('click', () => {
+      phoneMode = !phoneMode;
+      clearSelection();
+      message.textContent = '';
+      toggleModeBtn.textContent = phoneMode ? messages.pcVersion : messages.phoneVersion;
+      saveElements();
+      updateElements();
+    });
+
+    toggleLangBtn.addEventListener('click', () => {
+      currentLang = currentLang === 'ru' ? 'en' : 'ru';
+
+      // При смене языка нужно обновить элементы — 
+      // сбрасываем элементы к стартовым для нового языка
+      elements = [...data[currentLang].elements];
+      combinations = data[currentLang].combinations;
+      messages = data[currentLang].messages;
+      titleEl.textContent = messages.title;
+      toggleModeBtn.textContent = phoneMode ? messages.pcVersion : messages.phoneVersion;
+      toggleLangBtn.textContent = currentLang === 'ru' ? messages.englishEdition : messages.russianEdition;
+      clearSelection();
+      message.textContent = '';
+      saveElements();
+      updateElements();
+    });
+
+    // Загрузка начальных данных
+    loadElements();
+    updateElements();
+
+  </script>
+</body>
+</html>
+<div id="warning-banner" style="
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+  padding: 10px 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  font-size: 14px;
+  z-index: 1001;
+  max-width: 90%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+">
+  <span>
+    <strong>Внимание:</strong> если вы нажмёте <em>English Edition</em>, ваш прогресс сбросится!
+    <br />
+    <strong>Attention:</strong> if you switch back to Russian version, your progress will be reset!
+  </span>
+  <button onclick="document.getElementById('warning-banner').style.display='none'" style="
+    background: transparent;
+    border: none;
+    font-weight: bold;
+    font-size: 16px;
+    color: #856404;
+    cursor: pointer;
+  " aria-label=\"Закрыть предупреждение\">&times;</button>
+</div>
