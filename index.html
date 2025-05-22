@@ -81,7 +81,7 @@
   </div>
 
   <script>
-    // Данные для двух языков
+
     const data = {
       ru: {
         title: 'Little Alchemy',
@@ -309,7 +309,6 @@
     let draggedElement = null;
     let selectedElements = [];
 
-    // Загрузка сохранённых элементов или начальных из языка
     function loadElements() {
       const saved = localStorage.getItem('elements');
       if (saved) {
@@ -339,7 +338,7 @@
         div.dataset.name = el;
 
         if (!phoneMode) {
-          // PC mode with drag and drop
+
           div.setAttribute('draggable', 'true');
 
           div.addEventListener('dragstart', (e) => {
@@ -372,7 +371,7 @@
             }
           });
         } else {
-          // Phone mode by click
+
           div.style.cursor = 'pointer';
 
           div.addEventListener('click', () => {
@@ -434,8 +433,6 @@
     toggleLangBtn.addEventListener('click', () => {
       currentLang = currentLang === 'ru' ? 'en' : 'ru';
 
-      // При смене языка нужно обновить элементы — 
-      // сбрасываем элементы к стартовым для нового языка
       elements = [...data[currentLang].elements];
       combinations = data[currentLang].combinations;
       messages = data[currentLang].messages;
@@ -448,7 +445,6 @@
       updateElements();
     });
 
-    // Загрузка начальных данных
     loadElements();
     updateElements();
 
