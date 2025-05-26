@@ -2,48 +2,119 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Little Alchemy with Extended Combinations</title>
+  <title>Mini-Alchemy</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
-    h1 { text-align: center; }
-    #elements {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      margin-bottom: 20px;
+    :root {
+      --primary: #4a6fa5;
+      --secondary: #166088;
+      --accent: #4fc3f7;
+      --background: #f8f9fa;
+      --card-bg: #ffffff;
+      --text: #333333;
+      --success: #2e7d32;
+      --error: #c62828;
     }
-    .element {
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: grab;
-      border: 1px solid #888;
-      border-radius: 5px;
-      background: white;
-      user-select: none;
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+      background: var(--background);
+      color: var(--text);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    h1 {
       text-align: center;
-      min-width: 80px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      transition: background 0.3s;
+      color: var(--secondary);
+      margin-bottom: 30px;
+      font-size: 2.5rem;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
     }
-    .element:hover {
-      background: #d0e7ff;
-    }
-    .element.dragging {
-      opacity: 0.5;
-      cursor: grabbing;
-    }
-    .element.selected {
-      background: #ffd966;
-      border-color: #cc9a00;
-    }
+    
     #message {
       text-align: center;
       font-weight: bold;
-      color: #2a7f2a;
       min-height: 24px;
+      margin: 20px 0;
+      padding: 10px;
+      border-radius: 5px;
+      transition: all 0.3s ease;
+    }
+    
+    .message-success {
+      background-color: rgba(46, 125, 50, 0.1);
+      color: var(--success);
+      border-left: 4px solid var(--success);
+    }
+    
+    .message-error {
+      background-color: rgba(198, 40, 40, 0.1);
+      color: var(--error);
+      border-left: 4px solid var(--error);
+    }
+    
+    .message-info {
+      background-color: rgba(33, 150, 243, 0.1);
+      color: var(--secondary);
+      border-left: 4px solid var(--secondary);
+    }
+    
+    #elements {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 15px;
       margin-bottom: 20px;
     }
+    
+    .element {
+      padding: 15px 10px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      background: var(--card-bg);
+      user-select: none;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .element::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+    
+    .element:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+    
+    .element:hover::before {
+      transform: scaleX(1);
+    }
+    
+    .element.dragging {
+      opacity: 0.7;
+      cursor: grabbing;
+      transform: scale(0.95);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .element.selected {
+      background: #fff9c4;
+      box-shadow: 0 0 0 2px var(--accent);
+    }
+    
     #buttons {
       position: fixed;
       bottom: 20px;
@@ -52,36 +123,82 @@
       gap: 10px;
       z-index: 1000;
     }
+    
     button {
-      padding: 10px 15px;
-      background: #2a7f2a;
+      padding: 12px 20px;
+      background: var(--primary);
       color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: 8px;
       cursor: pointer;
-      font-weight: bold;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
       user-select: none;
-      transition: background 0.3s;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
+    
     button:hover {
-      background: #236622;
+      background: var(--secondary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    .progress-container {
+      width: 100%;
+      background-color: #e0e0e0;
+      border-radius: 8px;
+      margin: 20px 0;
+      overflow: hidden;
+    }
+    
+    .progress-bar {
+      height: 10px;
+      background-color: var(--accent);
+      border-radius: 8px;
+      transition: width 0.5s ease;
+    }
+    
+    @media (max-width: 768px) {
+      #elements {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      }
+      
+      .element {
+        padding: 12px 8px;
+        font-size: 14px;
+      }
+      
+      h1 {
+        font-size: 2rem;
+      }
     }
   </style>
 </head>
 <body>
   <h1 id="title">Little Alchemy</h1>
   
+  <div class="progress-container">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+  
   <div id="message"></div>
   <div id="elements"></div>
 
   <div id="buttons">
-    <button id="toggleModeBtn">Phone Version</button>
-    <button id="toggleLangBtn">English Edition</button>
+    <button id="toggleModeBtn">
+      <span id="modeIcon">📱</span>
+      <span id="modeText">Версия для телефонов</span>
+    </button>
   </div>
 
   <script>
-
     const data = {
       ru: {
         title: 'Little Alchemy',
@@ -178,140 +295,31 @@
           'Коза+Шутка': 'Фуфлик',
           'Губка+Крыса': 'Гофман',
           'Проблема+Взрыв': 'Тробл',
-
         },
         messages: {
           dragStart: 'Перетащите элемент "{0}" на другой',
           selectSecond: 'Выберите второй элемент',
-          selected: 'Ты выбрал: {0} + {1}',
-          newElement: 'Получился новый элемент: {0}!',
-          failCombine: 'Невозможно объединить "{0}" и "{1}".',
-          phoneVersion: 'Версия для телефонов',
-          pcVersion: 'Версия для ПК (drag & drop)',
-          englishEdition: 'English Edition',
-          russianEdition: 'Русская версия',
-          title: 'Little Alchemy'
-        }
-      },
-      en: {
-        title: 'Little Alchemy',
-        elements: ['Water', 'Fire', 'Earth', 'Air', 'Sun', 'Metal', 'Bread'],
-        combinations: {
-          'Water+Fire': 'Steam',
-          'Water+Earth': 'Mud',
-          'Water+Air': 'Fog',
-          'Water+Sun': 'Dew',
-          'Water+Metal': 'Aluminum',
-          'Water+Bread': 'Dough',
-          'Fire+Earth': 'Lava',
-          'Fire+Air': 'Pressure',
-          'Pressure+Alloy': 'Stone',
-          'Fire+Sun': 'Light',
-          'Fire+Metal': 'Alloy',
-          'Fire+Bread': 'Ash',
-          'Earth+Air': 'Dust',
-          'Earth+Sun': 'Lands',
-          'Earth+Bread': 'Wheat',
-          'Lava+Pressure': 'Compression',
-          'Compression+Light': 'Electricity',
-          'Air+Pressure': 'Cloud',
-          'Cloud+Water': 'Rain',
-          'Rain+Water': 'Puddle',
-          'Puddle+Mud': 'Swamp',
-          'Rain+Light': 'Rainbow',
-          'Pressure+Stone': 'Mountain',
-          'Mountain+Water': 'Stream',
-          'Stream+Water': 'Sea',
-          'Sea+Compression': 'Lake',
-          'Sea+Water': 'Ocean',
-          'Pressure+Light': 'Atmosphere',
-          'Atmosphere+Lands': 'Planet',
-          'Mud+Pressure': 'Soil',
-          'Soil+Rain': 'Plant',
-          'Plant+Water': 'Algae',
-          'Plant+Rain': 'Grass',
-          'Grass+Light': 'Garden',
-          'Pressure+Fire': 'Energy',
-          'Energy+Pressure': 'Matter',
-          'Matter+Planet': 'Space',
-          'Energy+Swamp': 'Life',
-          'Life+Mud': 'Human',
-          'Human+Garden': 'Gardener',
-          'Human+Soil': 'Farmer',
-          'Farmer+Soil': 'Farm',
-          'Farm+Life': 'Animal',
-          'Animal+Air': 'Goat',
-          'Goat+Human': 'Kadyrov',
-          'Air+Energy': 'Wind',
-          'Energy+Human': 'Strength',
-          'Strength+Wind': 'Storm',
-          'Storm+Dust': 'Dust Storm',
-          'Water+Steam': 'Freezing',
-          'Freezing+Water': 'Ice',
-          'Ice+Earth': 'Snow',
-          'Snow+Mountain': 'Avalanche',
-          'Mountain+Avalanche': 'Catastrophe',
-          'Catastrophe+Water': 'Tsunami',
-          'Catastrophe+Lava': 'Eruption',
-          'Catastrophe+Earth': 'Earthquake',
-          'Pressure+Catastrophe': 'Explosion',
-          'Explosion+Pressure': 'Uranium',
-          'Uranium+Compression': 'Molecule',
-          'Molecule+Compression': 'Atom',
-          'Atom+Compression': 'Quark',
-          'Quark+Compression': '???',
-          'Atom+Pressure': 'Speed',
-          'Molecule+Pressure': 'Time',
-          'Soil+Fire': 'Sand',
-          'Sand+Fire': 'Glass',
-          'Glass+Time': 'Clock',
-          'Clock+Explosion': 'Time Machine',
-          'Animal+Atom': 'Tardigrade',
-          'Atom+Molecule': 'Spark',
-          'Tardigrade+Spark': 'Immortality',
-          'Strength+Spark': 'Growth',
-          'Time+Sun': 'Daytime',
-          'Daytime+Time': 'Cycle',
-          'Cycle+Time': 'Day',
-          'Day+Time': 'Night',
-          'Sun+Cycle': 'Sunset',
-          'Sunset+Time': 'Sunrise',
-          'Lands+Water': 'Geyser',
-          'Night+Planet': 'Moon',
-          'Moon+Spark': 'Satellite',
-          'Immortality+Spark': 'Joke',
-          'Joke+Moon': 'Cheese',
-          'Cheese+Animal': 'Rat',
-          'Immortality+Time Machine': 'Nonexistence',
-
-          
-        },
-        messages: {
-          dragStart: 'Drag the element "{0}" onto another',
-          selectSecond: 'Select the second element',
-          selected: 'You selected: {0} + {1}',
-          newElement: 'New element created: {0}!',
-          failCombine: 'Cannot combine "{0}" and "{1}".',
-          phoneVersion: 'Phone Version',
-          pcVersion: 'PC Version (drag & drop)',
-          englishEdition: 'English Edition',
-          russianEdition: 'Russian Edition',
-          title: 'Little Alchemy'
+          selected: 'Вы выбрали: {0} + {1}',
+          newElement: 'Получен новый элемент: {0}!',
+          failCombine: 'Невозможно объединить "{0}" и "{1}"',
+          phoneVersion: '📱 Версия для телефонов',
+          pcVersion: '🖥️ Версия для ПК'
         }
       }
     };
 
-    let currentLang = localStorage.getItem('lang') || 'ru';
     let phoneMode = localStorage.getItem('phoneMode') === 'true';
     let elements = [];
-    let combinations = {};
-    let messages = {};
+    let combinations = data.ru.combinations;
+    let messages = data.ru.messages;
 
     const container = document.getElementById('elements');
     const message = document.getElementById('message');
     const toggleModeBtn = document.getElementById('toggleModeBtn');
-    const toggleLangBtn = document.getElementById('toggleLangBtn');
+    const modeText = document.getElementById('modeText');
+    const modeIcon = document.getElementById('modeIcon');
     const titleEl = document.getElementById('title');
+    const progressBar = document.getElementById('progressBar');
 
     let draggedElement = null;
     let selectedElements = [];
@@ -321,19 +329,21 @@
       if (saved) {
         elements = JSON.parse(saved);
       } else {
-        elements = [...data[currentLang].elements];
+        elements = [...data.ru.elements];
       }
-      combinations = data[currentLang].combinations;
-      messages = data[currentLang].messages;
-      titleEl.textContent = messages.title;
-      toggleModeBtn.textContent = phoneMode ? messages.pcVersion : messages.phoneVersion;
-      toggleLangBtn.textContent = currentLang === 'ru' ? messages.englishEdition : messages.russianEdition;
+      updateProgress();
     }
 
     function saveElements() {
       localStorage.setItem('elements', JSON.stringify(elements));
       localStorage.setItem('phoneMode', phoneMode);
-      localStorage.setItem('lang', currentLang);
+    }
+
+    function updateProgress() {
+      const totalElements = Object.keys(combinations).length + data.ru.elements.length;
+      const discovered = elements.length;
+      const percentage = (discovered / totalElements) * 100;
+      progressBar.style.width = `${percentage}%`;
     }
 
     function updateElements() {
@@ -345,56 +355,52 @@
         div.dataset.name = el;
 
         if (!phoneMode) {
-
           div.setAttribute('draggable', 'true');
 
           div.addEventListener('dragstart', (e) => {
             draggedElement = e.target;
             e.target.classList.add('dragging');
-            message.textContent = messages.dragStart.replace('{0}', e.target.textContent);
+            showMessage(messages.dragStart.replace('{0}', e.target.textContent), 'info');
           });
 
           div.addEventListener('dragend', (e) => {
             draggedElement = null;
             e.target.classList.remove('dragging');
-            message.textContent = '';
+            clearMessage();
           });
 
           div.addEventListener('dragover', (e) => {
             e.preventDefault();
-            e.target.style.background = '#a0c4ff';
+            e.target.style.boxShadow = '0 0 0 2px var(--accent)';
           });
 
           div.addEventListener('dragleave', (e) => {
-            e.target.style.background = 'white';
+            e.target.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
           });
 
           div.addEventListener('drop', (e) => {
             e.preventDefault();
-            e.target.style.background = 'white';
+            e.target.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
 
             if (draggedElement && draggedElement !== e.target) {
               combineElements(draggedElement.dataset.name, e.target.dataset.name);
             }
           });
         } else {
-
-          div.style.cursor = 'pointer';
-
           div.addEventListener('click', () => {
             if (selectedElements.length < 2 && !selectedElements.includes(el)) {
               selectedElements.push(el);
               div.classList.add('selected');
               if (selectedElements.length === 2) {
-                message.textContent = messages.selected
+                showMessage(messages.selected
                   .replace('{0}', selectedElements[0])
-                  .replace('{1}', selectedElements[1]);
+                  .replace('{1}', selectedElements[1]), 'info');
                 setTimeout(() => {
                   combineElements(selectedElements[0], selectedElements[1]);
                   clearSelection();
                 }, 1000);
               } else {
-                message.textContent = messages.selectSecond;
+                showMessage(messages.selectSecond, 'info');
               }
             }
           });
@@ -410,6 +416,17 @@
       elems.forEach(e => e.classList.remove('selected'));
     }
 
+    function showMessage(text, type) {
+      message.textContent = text;
+      message.className = '';
+      message.classList.add(`message-${type}`);
+    }
+
+    function clearMessage() {
+      message.textContent = '';
+      message.className = '';
+    }
+
     function combineElements(a, b) {
       const key1 = a + '+' + b;
       const key2 = b + '+' + a;
@@ -421,73 +438,31 @@
           elements.push(result);
           saveElements();
           updateElements();
+          updateProgress();
+          showMessage(messages.newElement.replace('{0}', result), 'success');
+        } else {
+          showMessage(`Уже есть: ${result}`, 'info');
         }
-        message.textContent = messages.newElement.replace('{0}', result);
       } else {
-        message.textContent = messages.failCombine.replace('{0}', a).replace('{1}', b);
+        showMessage(messages.failCombine.replace('{0}', a).replace('{1}', b), 'error');
       }
     }
 
     toggleModeBtn.addEventListener('click', () => {
       phoneMode = !phoneMode;
       clearSelection();
-      message.textContent = '';
-      toggleModeBtn.textContent = phoneMode ? messages.pcVersion : messages.phoneVersion;
+      clearMessage();
+      modeText.textContent = phoneMode ? messages.pcVersion : messages.phoneVersion;
+      modeIcon.textContent = phoneMode ? '🖥️' : '📱';
       saveElements();
       updateElements();
     });
 
-    toggleLangBtn.addEventListener('click', () => {
-      currentLang = currentLang === 'ru' ? 'en' : 'ru';
-
-      elements = [...data[currentLang].elements];
-      combinations = data[currentLang].combinations;
-      messages = data[currentLang].messages;
-      titleEl.textContent = messages.title;
-      toggleModeBtn.textContent = phoneMode ? messages.pcVersion : messages.phoneVersion;
-      toggleLangBtn.textContent = currentLang === 'ru' ? messages.englishEdition : messages.russianEdition;
-      clearSelection();
-      message.textContent = '';
-      saveElements();
-      updateElements();
-    });
-
+    // Initialize
     loadElements();
     updateElements();
-
+    modeText.textContent = phoneMode ? messages.pcVersion : messages.phoneVersion;
+    modeIcon.textContent = phoneMode ? '🖥️' : '📱';
   </script>
 </body>
 </html>
-<div id="warning-banner" style="
-  position: fixed;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffeeba;
-  padding: 10px 20px;
-  border-radius: 5px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  font-size: 14px;
-  z-index: 1001;
-  max-width: 90%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-">
-  <span>
-    <strong>Внимание:</strong> если вы нажмёте <em>English Edition</em>, ваш прогресс сбросится!
-    <br />
-    <strong>Attention:</strong> if you switch back to Russian version, your progress will be reset!
-  </span>
-  <button onclick="document.getElementById('warning-banner').style.display='none'" style="
-    background: transparent;
-    border: none;
-    font-weight: bold;
-    font-size: 16px;
-    color: #856404;
-    cursor: pointer;
-  " aria-label=\"Закрыть предупреждение\">&times;</button>
-</div>
